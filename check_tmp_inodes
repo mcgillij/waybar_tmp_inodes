@@ -1,0 +1,40 @@
+#!/bin/bash
+set -euo pipefail
+
+bar() {
+  local pct=$1
+  local filled=$(( (pct + 5) / 10 ))
+  local b
+  for ((i = 0; i < filled; i++)); do b+="█"; done
+  for ((i = filled; i < 10; i++)); do b+="░"; done
+  echo "$b"
+}
+
+read -r fs total used avail pct mount <<< "$(df -i /tmp | tail -1)"
+pct_num=${pct%\%}
+
+color="#50fa7b"
+[[ $pct_num -ge 80 ]] && color="#f1fa8c"
+[[ $pct_num -ge 90 ]] && color="#ff5555"
+
+plain="Mount:        $mount
+Inodes total: $(printf "%'d" "$total")
+Inodes used:  $(printf "%'d" "$used")
+Inodes free:  $(printf "%'d" "$avail")
+Usage:        $pct
+$(bar "$pct_num") $pct"
+
+echo "$plain"
+
+if [[ $# -gt 0 && "$1" == "--notify" ]]; then
+  html="<b>/tmp Inode Usage</b>
+
+Mount: $mount
+Inodes total: $(printf "%'d" "$total")
+Inodes used:  $(printf "%'d" "$used")
+Inodes free:  $(printf "%'d" "$avail")
+Usage:        <span color='$color'>$pct</span>
+
+$(bar "$pct_num") $pct"
+  notify-send -t 15000 "/tmp Inode Usage" "$html"
+fi
