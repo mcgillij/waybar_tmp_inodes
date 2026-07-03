@@ -7,7 +7,7 @@ color="#50fa7b"
 
 text=" ${pct}"
 
-tooltip="Inodes: ${used} / ${total} used (${pct})
-Free: ${avail}"
+printf -v tooltip "Inodes: %s / %s used (%s)\nFree: %s" "$used" "$total" "$pct" "$avail"
 
-echo "{\"text\": \"${text}\", \"tooltip\": \"${tooltip}\", \"color\": \"${color}\"}"
+jq -nc --arg text "$text" --arg tooltip "$tooltip" --arg color "$color" \
+  '{text: $text, tooltip: $tooltip, color: $color}'
